@@ -1,0 +1,28 @@
+version: 2 # use CircleCI 2.0
+jobs: # A basic unit of work in a run
+  build: # runs not using Workflows must have a `build` job as entry point 
+    # directory where steps are run
+    working_directory: ~/circleci-demo-python-django
+    docker: # run the steps with Docker
+      # CircleCI Python images available at: https://hub.docker.com/r/circleci/python/
+      - image: circleci/python:3.9.1
+    steps: # steps that comprise the `build` job
+      - checkout # check out source code to working directory
+      - restore_cache
+      # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
+      - run:
+          command: |
+            sudo pip install -U pip
+            sudo pip install -r requirements.txt
+      - save_cache: # cache Python dependencies using checksum of Pipfile as the cache-key
+          paths:
+            - "venv"
+      - run:
+          command: |
+            mkdir test-results
+            pytest --junit-xml=test-results
+      - store_test_results: # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
+          path: test-results
+      - store_artifacts: # Upload test summary for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
+          path: test-results
+          destination: tr1
